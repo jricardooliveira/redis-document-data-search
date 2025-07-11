@@ -88,13 +88,13 @@ Build and run the API server:
 
 ```sh
 cd redis-document-data-search/cmd/api
-go run main.go
+go run ./cmd/api/main.go
 ```
 
 Or set environment variables for Redis and port:
 
 ```sh
-REDIS_URL=redis://localhost:6379/0 API_PORT=8080 go run main.go
+REDIS_URL=redis://localhost:6379/0 API_PORT=8080 go run ./cmd/api/main.go
 ```
 
 ## API Endpoints
@@ -104,13 +104,13 @@ REDIS_URL=redis://localhost:6379/0 API_PORT=8080 go run main.go
 - **Path:** `/store_customers`
 - **Query Parameters:**
   - `count` (optional, default: `1000`): Number of customers to generate and store.
+- **Example:**
+  ```sh
+  curl -X POST "http://localhost:8080/store_customers?count=10000"
+  ```
 - **Response:**
   ```json
-  { "status": "ok", "stored": 1000 }
-  ```
-  or
-  ```json
-  { "error": "error message" }
+  { "status": "ok", "stored": 10000 }
   ```
 
 ### 2. Store Events
@@ -118,13 +118,13 @@ REDIS_URL=redis://localhost:6379/0 API_PORT=8080 go run main.go
 - **Path:** `/store_events`
 - **Query Parameters:**
   - `count` (optional, default: `1000`): Number of events to generate and store.
+- **Example:**
+  ```sh
+  curl -X POST "http://localhost:8080/store_events?count=10000"
+  ```
 - **Response:**
   ```json
-  { "status": "ok", "stored": 1000 }
-  ```
-  or
-  ```json
-  { "error": "error message" }
+  { "status": "ok", "stored": 10000 }
   ```
 
 ### 3. Create Indexes
@@ -134,10 +134,6 @@ REDIS_URL=redis://localhost:6379/0 API_PORT=8080 go run main.go
   ```json
   { "status": "ok" }
   ```
-  or
-  ```json
-  { "customerIdx": "error (if any)", "eventIdx": "error (if any)" }
-  ```
 
 ### 4. Search Customers
 - **Method:** `GET`
@@ -146,13 +142,13 @@ REDIS_URL=redis://localhost:6379/0 API_PORT=8080 go run main.go
   - Any combination of customer identifiers (e.g., `email`, `phone`, `visitor_id`).
   - `limit` (optional, default: `10`): Max results.
   - `offset` (optional, default: `0`): Offset for pagination.
+- **Example:**
+  ```sh
+  curl "http://localhost:8080/search_customers?email=foo@bar.com"
+  ```
 - **Response:**
   ```json
   { "results": [ ... ], "query_time_μs": 1234 }
-  ```
-  or
-  ```json
-  { "error": "error message", "query_time_μs": 1234 }
   ```
 
 ### 5. Search Events
@@ -162,13 +158,13 @@ REDIS_URL=redis://localhost:6379/0 API_PORT=8080 go run main.go
   - Any combination of event identifiers (e.g., `visitor_id`, `call_id`, `chat_id`).
   - `limit` (optional, default: `10`): Max results.
   - `offset` (optional, default: `0`): Offset for pagination.
+- **Example:**
+  ```sh
+  curl "http://localhost:8080/search_events?call_id=call_6z2kl"
+  ```
 - **Response:**
   ```json
   { "results": [ ... ], "query_time_μs": 1234 }
-  ```
-  or
-  ```json
-  { "error": "error message", "query_time_μs": 1234 }
   ```
 
 ### 6. Get Random Event
@@ -194,7 +190,13 @@ REDIS_URL=redis://localhost:6379/0 API_PORT=8080 go run main.go
 - **Path:** `/healthz`
 - **Response:**
   ```json
-  { "status": "ok" }
+  {
+    "status": "ok",
+    "redis_url": "redis://localhost:6379/0",
+    "db_index": "0",
+    "customer_count": 10000,
+    "event_count": 10000
+  }
   ```
 
 ---

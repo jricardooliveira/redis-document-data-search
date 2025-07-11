@@ -11,12 +11,12 @@ import (
 
 var ctx = context.Background()
 
-func NewRedisClient(redisURL string) *redis.Client {
+func NewRedisClient(redisURL string) (*redis.Client, error) {
 	opt, err := redis.ParseURL(redisURL)
 	if err != nil {
-		panic(fmt.Sprintf("Invalid Redis URL: %v", err))
+		return nil, fmt.Errorf("invalid Redis URL: %w", err)
 	}
-	return redis.NewClient(opt)
+	return redis.NewClient(opt), nil
 }
 
 func StoreJSON(client *redis.Client, key string, value interface{}) error {
@@ -41,7 +41,7 @@ func StoreJSON(client *redis.Client, key string, value interface{}) error {
 
 func CreateCustomerIndex(client *redis.Client) error {
 	// Drop index if exists
-	client.Do(ctx, "FT.DROPINDEX", "customerIdx", "DD")
+	client.Do(ctx, "FT.DROPINDEX", "customerIdx")
 	// Create index
 	return client.Do(ctx, "FT.CREATE", "customerIdx", "ON", "JSON", "PREFIX", "1", "customer:",
 		"SCHEMA",
@@ -53,7 +53,7 @@ func CreateCustomerIndex(client *redis.Client) error {
 
 func CreateEventIndex(client *redis.Client) error {
 	// Drop index if exists
-	client.Do(ctx, "FT.DROPINDEX", "eventIdx", "DD")
+	client.Do(ctx, "FT.DROPINDEX", "eventIdx")
 	// Create index
 	return client.Do(ctx, "FT.CREATE", "eventIdx", "ON", "JSON", "PREFIX", "1", "event:",
 		"SCHEMA",
