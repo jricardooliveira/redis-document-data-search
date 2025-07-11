@@ -68,7 +68,7 @@ func main() {
 		return c.Type("html", "utf-8").SendString("<pre>" + string(pretty) + "</pre>")
 	}
 
-	app.Post("/store_customers", func(c *fiber.Ctx) error {
+	app.Post("/generate_customers", func(c *fiber.Ctx) error {
 		count, _ := strconv.Atoi(c.Query("count", "1000"))
 		client, err := redisutil.NewRedisClient(redisURL)
 		if err != nil {
@@ -86,7 +86,7 @@ func main() {
 		return prettyJSON(c, fiber.Map{"status": "ok", "stored": count})
 	})
 
-	app.Post("/store_events", func(c *fiber.Ctx) error {
+	app.Post("/generate_events", func(c *fiber.Ctx) error {
 		count, _ := strconv.Atoi(c.Query("count", "1000"))
 		client, err := redisutil.NewRedisClient(redisURL)
 		if err != nil {

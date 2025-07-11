@@ -12,8 +12,8 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(commands.StoreCustomersCmd)
-	rootCmd.AddCommand(commands.StoreEventsCmd)
+	rootCmd.AddCommand(commands.GenerateCustomersCmd)
+	rootCmd.AddCommand(commands.GenerateEventsCmd)
 	rootCmd.AddCommand(commands.CreateIndexesCmd)
 	rootCmd.AddCommand(commands.SearchCustomersCmd)
 	rootCmd.AddCommand(commands.SearchEventsCmd)

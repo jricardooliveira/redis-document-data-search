@@ -44,13 +44,13 @@ export REDIS_URL=redis://localhost:6379/0
 ### Store Customers
 Generate and store N customers in Redis:
 ```sh
-./redisdocsearch store_customers 1000
+./redisdocsearch generate_customers 1000
 ```
 
 ### Store Events
 Generate and store N events in Redis:
 ```sh
-./redisdocsearch store_events 1000
+./redisdocsearch generate_events 1000
 ```
 
 ### Create Indexes
@@ -101,12 +101,12 @@ REDIS_URL=redis://localhost:6379/0 API_PORT=8080 go run ./cmd/api/main.go
 
 ### 1. Store Customers
 - **Method:** `POST`
-- **Path:** `/store_customers`
+- **Path:** `/generate_customers`
 - **Query Parameters:**
   - `count` (optional, default: `1000`): Number of customers to generate and store.
 - **Example:**
   ```sh
-  curl -X POST "http://localhost:8080/store_customers?count=10000"
+  curl -X POST "http://localhost:8080/generate_customers?count=10000"
   ```
 - **Response:**
   ```json
@@ -115,12 +115,12 @@ REDIS_URL=redis://localhost:6379/0 API_PORT=8080 go run ./cmd/api/main.go
 
 ### 2. Store Events
 - **Method:** `POST`
-- **Path:** `/store_events`
+- **Path:** `/generate_events`
 - **Query Parameters:**
   - `count` (optional, default: `1000`): Number of events to generate and store.
 - **Example:**
   ```sh
-  curl -X POST "http://localhost:8080/store_events?count=10000"
+  curl -X POST "http://localhost:8080/generate_events?count=10000"
   ```
 - **Response:**
   ```json
