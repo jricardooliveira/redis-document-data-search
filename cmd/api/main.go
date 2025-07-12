@@ -27,10 +27,11 @@ func main() {
 		status := c.Response().StatusCode()
 		method := c.Method()
 		path := c.Path()
+		responseSize := len(c.Response().Body())
 		if err != nil {
-			slog.Error("request error", "method", method, "path", path, "status", status, "duration_μs", dur.Microseconds(), "error", err.Error())
+			slog.Error("request error", "method", method, "path", path, "status", status, "duration_μs", dur.Microseconds(), "response_size_bytes", responseSize, "error", err.Error())
 		} else {
-			slog.Info("request", "method", method, "path", path, "status", status, "duration_μs", dur.Microseconds())
+			slog.Info("request", "method", method, "path", path, "status", status, "duration_μs", dur.Microseconds(), "response_size_bytes", responseSize)
 		}
 		return err
 	})

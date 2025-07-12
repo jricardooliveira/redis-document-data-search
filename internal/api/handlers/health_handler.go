@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jricardooliveira/redis-document-data-search/internal/redisutil"
@@ -11,6 +12,7 @@ import (
 
 func HealthHandler(redisURL string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
+		start := time.Now()
 		client, err := redisutil.NewRedisClient(redisURL)
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{"status": "error", "error": "redis client failed", "redis_url": redisURL})
@@ -37,13 +39,21 @@ func HealthHandler(redisURL string) fiber.Handler {
 			memInfo["used_memory_bytes"] = usedBytes
 			memInfo["used_memory_human"] = usedHuman
 		}
-		return PrettyJSON(c, fiber.Map{
+
+		indexes, idxErr := redisutil.GetIndexesAndFields()
+		queryTimeMs := time.Since(start).Milliseconds()
+		resp := fiber.Map{
 			"status":         "ok",
 			"redis_url":      redisURL,
 			"db_index":       dbIdx,
 			"customer_count": customerCount,
 			"event_count":    eventCount,
 			"redis_memory":   memInfo,
-		})
+			"query_time_ms":  queryTimeMs,
+		}
+		if idxErr == nil {
+			resp["indexes"] = indexes
+		}
+		return PrettyJSON(c, resp)
 	}
 }

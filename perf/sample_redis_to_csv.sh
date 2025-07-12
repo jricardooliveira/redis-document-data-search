@@ -44,7 +44,7 @@ for KEY in "${SAMPLED_KEYS[@]}"; do
   if [ "$TYPE" == "customer" ]; then
     EMAIL=$(echo "$RECORD" | jq -r '.primaryIdentifiers.email // empty')
     PHONE=$(echo "$RECORD" | jq -r '.primaryIdentifiers.phone // empty')
-    VISITOR_ID=$(echo "$RECORD" | jq -r '.identifiers.visitor_ids[0] // empty')
+    VISITOR_ID=$(echo "$RECORD" | jq -r '.primaryIdentifiers.cmec_visitor_id // empty')
     echo "\"$KEY\",\"$EMAIL\",\"$PHONE\",\"$VISITOR_ID\"" >> "$CSV_FILE"
   else
     VISITOR_ID=$(echo "$RECORD" | jq -r '.identifiers.cmec_visitor_id // empty')

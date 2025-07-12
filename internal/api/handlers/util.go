@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -13,11 +14,23 @@ func PrettyJSON(c *fiber.Ctx, v interface{}) error {
 	return c.Type("html", "utf-8").SendString("<pre>" + string(pretty) + "</pre>")
 }
 
+func escapeRediSearchValue(val string) string {
+	// Escape double quotes
+	val = strings.ReplaceAll(val, `"`, `\"`)
+	// Escape other RediSearch special characters
+	specialChars := []string{"-", "[", "]", "{", "}", "(", ")", "<", ">", ":", "~", "*", "?", "|", "&", "'", "!", "@", "#", "$", "%", "^", "="}
+	for _, ch := range specialChars {
+		val = strings.ReplaceAll(val, ch, `\`+ch)
+	}
+	return val
+}
+
 // BuildRediSearchQuery constructs a RediSearch query string from a map of identifiers
 func BuildRediSearchQuery(identifiers map[string]string) string {
 	var parts []string
 	for k, v := range identifiers {
-		parts = append(parts, "@"+k+":"+v)
+		escaped := escapeRediSearchValue(v)
+		parts = append(parts, fmt.Sprintf("@%s:\"%s\"", k, escaped))
 	}
 	if len(parts) == 0 {
 		return "*"
