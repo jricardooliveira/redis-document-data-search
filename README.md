@@ -24,19 +24,34 @@ This project provides a Go-based CLI and API for generating, storing, indexing, 
 
 # CLI
 
-## Building the CLI
+## Building and Running (Recommended)
 
+This project uses a Makefile to build both the CLI and API binaries and place them in the `bin/` directory.
+
+### Build both binaries
 ```sh
-cd redis-document-data-search/cmd/cli
-go build -o redisdocsearch
+make
 ```
 
-## Running the CLI
+This will generate:
+- `bin/redis-document-cli` — CLI binary
+- `bin/redis-document-api` — API server binary
 
+### Clean binaries
+```sh
+make clean
+```
+
+### Running the CLI
 Set the Redis URL with the `REDIS_URL` environment variable (optional, defaults to `redis://localhost:6379/0`):
 
 ```sh
 export REDIS_URL=redis://localhost:6379/0
+```
+
+Run the CLI:
+```sh
+./bin/redis-document-cli <command> [args]
 ```
 
 ## CLI Commands
@@ -84,17 +99,16 @@ Print a random customer or event as JSON (for testing):
 
 ## Running the API Server
 
-Build and run the API server:
+After building with `make`, run the API server binary:
 
 ```sh
-cd redis-document-data-search/cmd/api
-go run ./cmd/api/main.go
+./bin/redis-document-api
 ```
 
 Or set environment variables for Redis and port:
 
 ```sh
-REDIS_URL=redis://localhost:6379/0 API_PORT=8080 go run ./cmd/api/main.go
+REDIS_URL=redis://localhost:6379/0 API_PORT=8080 ./bin/redis-document-api
 ```
 
 ## API Endpoints

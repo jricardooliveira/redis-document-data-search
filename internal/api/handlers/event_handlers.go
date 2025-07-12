@@ -26,7 +26,7 @@ func GenerateEventsHandler(redisURL string) fiber.Handler {
 				return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 			}
 		}
-		return c.JSON(fiber.Map{"status": "ok", "stored": count})
+		return PrettyJSON(c, fiber.Map{"status": "ok", "stored": count})
 	}
 }
 
@@ -55,7 +55,7 @@ func SearchEventsHandler(redisURL string) fiber.Handler {
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 		}
-		return c.JSON(fiber.Map{"results": results})
+		return PrettyJSON(c, fiber.Map{"results": results})
 	}
 }
 
@@ -81,7 +81,7 @@ func RandomEventHandler(redisURL string) fiber.Handler {
 		}
 		var arr []interface{}
 		if err := json.Unmarshal([]byte(val), &arr); err == nil && len(arr) > 0 {
-			return c.JSON(arr[0])
+			return PrettyJSON(c, arr[0])
 		}
 		return c.SendString(val)
 	}

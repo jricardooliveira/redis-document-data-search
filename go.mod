@@ -1,5 +1,7 @@
 module github.com/jricardooliveira/redis-document-data-search
 
+require github.com/brianvoe/gofakeit/v6 v6.27.0
+
 go 1.24.4
 
 require (

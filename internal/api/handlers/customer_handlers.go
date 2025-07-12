@@ -26,7 +26,7 @@ func GenerateCustomersHandler(redisURL string) fiber.Handler {
 				return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 			}
 		}
-		return c.JSON(fiber.Map{"status": "ok", "stored": count})
+		return PrettyJSON(c, fiber.Map{"status": "ok", "stored": count})
 	}
 }
 
@@ -55,7 +55,7 @@ func SearchCustomersHandler(redisURL string) fiber.Handler {
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 		}
-		return c.JSON(fiber.Map{"results": results})
+		return PrettyJSON(c, fiber.Map{"results": results})
 	}
 }
 
@@ -75,15 +75,14 @@ func RandomCustomerHandler(redisURL string) fiber.Handler {
 			return c.Status(404).JSON(fiber.Map{"error": "no customers found"})
 		}
 		key := keys[rand.Intn(len(keys))]
-		val, err := client.Do(ctx, "JSON.GET", key, "$" ).Text()
+		val, err := client.Do(ctx, "JSON.GET", key, "$").Text()
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 		}
 		var arr []interface{}
 		if err := json.Unmarshal([]byte(val), &arr); err == nil && len(arr) > 0 {
-			return c.JSON(arr[0])
+			return PrettyJSON(c, arr[0])
 		}
 		return c.SendString(val)
 	}
 }
-

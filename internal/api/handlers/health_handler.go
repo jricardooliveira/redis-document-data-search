@@ -8,6 +8,7 @@ import (
 	"github.com/jricardooliveira/redis-document-data-search/internal/redisutil"
 )
 
+
 func HealthHandler(redisURL string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		client, err := redisutil.NewRedisClient(redisURL)
@@ -29,12 +30,20 @@ func HealthHandler(redisURL string) fiber.Handler {
 		if parts := strings.Split(redisURL, "/"); len(parts) > 1 {
 			dbIdx = parts[len(parts)-1]
 		}
-		return c.JSON(fiber.Map{
+		// Get Redis memory info
+		usedBytes, usedHuman, memErr := redisutil.GetRedisMemoryInfo(client)
+		memInfo := fiber.Map{}
+		if memErr == nil {
+			memInfo["used_memory_bytes"] = usedBytes
+			memInfo["used_memory_human"] = usedHuman
+		}
+		return PrettyJSON(c, fiber.Map{
 			"status":         "ok",
 			"redis_url":      redisURL,
 			"db_index":       dbIdx,
 			"customer_count": customerCount,
 			"event_count":    eventCount,
+			"redis_memory":   memInfo,
 		})
 	}
 }

@@ -4,9 +4,14 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
+
+	"github.com/brianvoe/gofakeit/v6"
 )
 
-func init() { rand.Seed(time.Now().UnixNano()) }
+func init() {
+	rand.Seed(time.Now().UnixNano())
+	gofakeit.Seed(time.Now().UnixNano())
+}
 
 // Event structure
 type Event struct {
@@ -34,71 +39,78 @@ type Customer struct {
 
 // Exported functions for random data generation
 func RandomEvent() Event {
-	visitorID := RandomString("", 3)
-	sessionID := RandomString("", 3)
+	visitorID := gofakeit.LetterN(3)
+	sessionID := gofakeit.LetterN(3)
 	return Event{
 		EventType: "visitor_event",
-		EventID:   RandomString("evt_", 6),
+		EventID:   "evt_" + gofakeit.LetterN(6),
 		Timestamp: RandomTimestamp(),
-		Source:    MaybeEmpty(RandomString("", 8)),
+		Source:    gofakeit.LetterN(8),
 		VisitorData: map[string]interface{}{
-			"visitor_id":  visitorID,
-			"session_id":  sessionID,
-			"page_url":    RandomURL(),
-			"referrer":    RandomReferrer(),
-			"utm_params":  RandomUTM(),
-			"device_info": RandomDeviceInfo(),
-			"behavior":    RandomBehavior(),
+			"behavior": map[string]interface{}{
+				"interactions": []string{"scroll", "click_cta", "hover", "form_submit"}[:rand.Intn(4)+1],
+				"pages_viewed": rand.Intn(10) + 1,
+				"time_on_site": rand.Intn(591) + 10,
+			},
+			"device_info": map[string]interface{}{
+				"device_type": []string{"desktop", "mobile", "tablet"}[rand.Intn(3)],
+				"ip_address":  fmt.Sprintf("192.168.%d.%d", rand.Intn(255), rand.Intn(255)),
+				"user_agent":  gofakeit.LetterN(10),
+			},
+			"page_url":   RandomURL(),
+			"referrer":   RandomReferrer(),
+			"session_id": sessionID,
+			"utm_params": map[string]interface{}{
+				"utm_campaign": "camp" + gofakeit.LetterN(5),
+				"utm_medium":   "med" + gofakeit.LetterN(5),
+				"utm_source":   "src" + gofakeit.LetterN(4),
+			},
+			"visitor_id": visitorID,
 		},
 		Data: map[string]interface{}{
-			"phone":  MaybeEmpty(RandomString("", 10)),
-			"email":  MaybeEmpty(RandomString("", 10) + "@example.com"),
-			"cookie": MaybeEmpty(RandomString("cookie_", 8)),
+			"cookie": "cookie_" + gofakeit.LetterN(8),
+			"email":  gofakeit.LetterN(10) + "@example.com",
+			"phone":  gofakeit.LetterN(10),
 		},
 		Identifiers: map[string]interface{}{
+			"cmec_contact_call_id":      "call_" + gofakeit.LetterN(5),
+			"cmec_contact_chat_id":      "chat_" + gofakeit.LetterN(5),
+			"cmec_contact_external_id":  "ext_" + gofakeit.LetterN(5),
+			"cmec_contact_form2lead_id": "f2l_" + gofakeit.LetterN(5),
+			"cmec_contact_tickets_id":   "ticket_" + gofakeit.LetterN(5),
 			"cmec_visitor_id":           visitorID,
-			"cmec_contact_call_id":      MaybeEmpty(RandomString("call_", 5)),
-			"cmec_contact_chat_id":      MaybeEmpty(RandomString("chat_", 5)),
-			"cmec_contact_external_id":  MaybeEmpty(RandomString("ext_", 5)),
-			"cmec_contact_form2lead_id": MaybeEmpty(RandomString("f2l_", 5)),
-			"cmec_contact_tickets_id":   MaybeEmpty(RandomString("ticket_", 5)),
 		},
 	}
 }
 
 func RandomCustomer() Customer {
-	visitorIDs := []string{RandomString("", 3), RandomString("", 3)}
-	sessionIDs := []string{RandomString("", 3), RandomString("", 3)}
-	email := RandomString("", 8) + "@example.com"
-	phone := RandomString("", 10)
+	visitorIDs := []string{gofakeit.UUID(), gofakeit.UUID()}
+	sessionIDs := []string{gofakeit.UUID(), gofakeit.UUID()}
+	email := gofakeit.Email()
+	phone := gofakeit.Phone()
 	return Customer{
-		CustomerID: RandomString("cust_unified_", 5),
-		CreatedAt:  RandomTimestamp(),
-		UpdatedAt:  RandomTimestamp(),
-		Merged:     RandomInt(0, 1),
-		Deleted:    RandomInt(0, 1),
+		CustomerID: gofakeit.UUID(),
+		CreatedAt:  gofakeit.Date().Format(time.RFC3339),
+		UpdatedAt:  gofakeit.Date().Format(time.RFC3339),
+		Merged:     gofakeit.Number(0, 1),
+		Deleted:    gofakeit.Number(0, 1),
 		Identifiers: map[string]interface{}{
-			"email":           []string{email},
-			"phone":           []string{phone},
-			"cmec_visitor_id": visitorIDs,
-			"cmec_session_id": sessionIDs,
+			"visitor_ids": visitorIDs,
+			"session_ids": sessionIDs,
 		},
 		PrimaryIdentifiers: map[string]interface{}{
-			"email":           email,
-			"phone":           phone,
-			"cmec_visitor_id": visitorIDs[0],
+			"email": email,
+			"phone": phone,
 		},
 		PersonalData: map[string]interface{}{
-			"name":              MaybeEmpty(RandomString("", 8)),
-			"company":           MaybeEmpty(RandomString("", 8)),
-			"title":             MaybeEmpty(RandomString("", 8)),
-			"inferred_location": MaybeEmpty(RandomString("", 8)),
+			"name":              gofakeit.Name(),
+			"company":           gofakeit.Company(),
+			"title":             gofakeit.JobTitle(),
+			"inferred_location": gofakeit.City() + ", " + gofakeit.Country(),
 		},
-		ConfidenceScore: RandomFloat(0.7, 1.0),
+		ConfidenceScore: gofakeit.Float64Range(0.6, 1.0),
 	}
 }
-
-// Helper for random int
 func RandomInt(min, max int) int {
 	return min + rand.Intn(max-min+1)
 }
@@ -125,7 +137,7 @@ func RandomString(prefix string, length int) string {
 }
 
 func RandomURL() string {
-	return fmt.Sprintf("https://%s.com/%s", RandomString("site", 5), RandomString("page", 3))
+	return fmt.Sprintf("https://%s.com/%s", RandomString("site", 5), RandomString("page", 10))
 }
 
 func RandomReferrer() string {
@@ -142,9 +154,9 @@ func RandomUTM() map[string]string {
 		return map[string]string{}
 	}
 	return map[string]string{
-		"utm_source":   MaybeEmpty(RandomString("src", 4)),
-		"utm_medium":   MaybeEmpty(RandomString("med", 4)),
-		"utm_campaign": MaybeEmpty(RandomString("camp", 4)),
+		"utm_source":   MaybeEmpty(RandomString("src", 10)),
+		"utm_medium":   MaybeEmpty(RandomString("med", 10)),
+		"utm_campaign": MaybeEmpty(RandomString("camp", 10)),
 	}
 }
 
@@ -153,7 +165,7 @@ func RandomDeviceInfo() map[string]string {
 		return map[string]string{}
 	}
 	return map[string]string{
-		"user_agent":  MaybeEmpty(RandomString("ua", 8)),
+		"user_agent":  MaybeEmpty(RandomString("ua", 20)),
 		"ip_address":  MaybeEmpty(fmt.Sprintf("192.168.%d.%d", rand.Intn(255), rand.Intn(255))),
 		"device_type": MaybeEmpty([]string{"desktop", "mobile", "tablet", ""}[rand.Intn(4)]),
 	}
