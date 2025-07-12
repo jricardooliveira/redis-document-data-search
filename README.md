@@ -19,8 +19,38 @@ This project provides a Go-based CLI and API for generating, storing, indexing, 
 - `cmd/api/main.go` — API server entry point
 - `internal/faker/` — Random data generation library
 - `internal/valkeyutil/` — Valkey/Redis and ValkeySearch utilities
+- `internal/monitor/` — Platform-specific resource limit logging utilities
+- `scripts/monitor_resources.sh` — Live system resource monitoring script
 
 ---
+
+## System Resource Monitoring
+
+To monitor open files, sockets, and resource usage while running the API or CLI (especially during load testing), use:
+
+```sh
+./scripts/monitor_resources.sh
+```
+
+This script prints:
+- Current and max open files (system-wide and per-process)
+- Open sockets to Redis
+- Sockets in TIME_WAIT state
+
+This helps you detect resource exhaustion and debug connection issues.
+
+## Platform-Specific Resource Limit Logging
+
+The application logs OS resource limits (open files, processes) at startup using platform-specific code:
+- On Linux: logs both open files and process limits.
+- On macOS: logs open files (process limits are not available).
+
+## Redis Client Usage (Best Practice)
+
+**Note:**  The API server uses a singleton Redis client with connection pooling for all HTTP requests.
+
+**Do not create a new Redis client per request**—this prevents connection leaks and resource exhaustion.
+
 
 # CLI
 
@@ -122,12 +152,12 @@ Below are examples of the JSON structure for both customer and event records as 
     "event_id": "evt_GxHerj",
     "event_type": "visitor_event",
     "identifiers": {
-      "cmec_contact_call_id": "call_EkcgN",
-      "cmec_contact_chat_id": "chat_idXJv",
-      "cmec_contact_external_id": "ext_wHzAe",
-      "cmec_contact_form2lead_id": "f2l_KkarS",
-      "cmec_contact_tickets_id": "ticket_fhChr",
-      "cmec_visitor_id": "RCu"
+      "contact_call_id": "call_EkcgN",
+      "contact_chat_id": "chat_idXJv",
+      "contact_external_id": "ext_wHzAe",
+      "contact_lead_id": "f2l_KkarS",
+      "contact_tickets_id": "ticket_fhChr",
+      "visitor_id": "RCu"
     },
     "source": "rGnzBVZY",
     "timestamp": "2025-07-08T18:30:19Z",
@@ -316,18 +346,18 @@ REDIS_URL=redis://localhost:6379/0 API_PORT=8080 ./bin/redis-document-api
         "fields": [
           {"path": "$.primaryIdentifiers.email", "alias": "email", "type": "TEXT"},
           {"path": "$.primaryIdentifiers.phone", "alias": "phone", "type": "TEXT"},
-          {"path": "$.primaryIdentifiers.cmec_visitor_id", "alias": "visitor_id", "type": "TEXT"}
+          {"path": "$.primaryIdentifiers.visitor_id", "alias": "visitor_id", "type": "TEXT"}
         ]
       },
       {
         "name": "eventIdx",
         "fields": [
-          {"path": "$.identifiers.cmec_visitor_id", "alias": "visitor_id", "type": "TEXT"},
-          {"path": "$.identifiers.cmec_contact_call_id", "alias": "call_id", "type": "TEXT"},
-          {"path": "$.identifiers.cmec_contact_chat_id", "alias": "chat_id", "type": "TEXT"},
-          {"path": "$.identifiers.cmec_contact_external_id", "alias": "external_id", "type": "TEXT"},
-          {"path": "$.identifiers.cmec_contact_form2lead_id", "alias": "form2lead_id", "type": "TEXT"},
-          {"path": "$.identifiers.cmec_contact_tickets_id", "alias": "tickets_id", "type": "TEXT"}
+          {"path": "$.identifiers.visitor_id", "alias": "visitor_id", "type": "TEXT"},
+          {"path": "$.identifiers.call_id", "alias": "call_id", "type": "TEXT"},
+          {"path": "$.identifiers.chat_id", "alias": "chat_id", "type": "TEXT"},
+          {"path": "$.identifiers.external_id", "alias": "external_id", "type": "TEXT"},
+          {"path": "$.identifiers.lead_id", "alias": "lead_id", "type": "TEXT"},
+          {"path": "$.identifiers.tickets_id", "alias": "tickets_id", "type": "TEXT"}
         ]
       }
     ],
