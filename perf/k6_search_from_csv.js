@@ -2,12 +2,21 @@ import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { SharedArray } from 'k6/data';
 
-export let options = {
-  vus: 50,
-  duration: '30s',
-};
+
 
 const BASE_URL = 'http://localhost:8080';
+
+export const options = {
+    stages: [
+      { duration: '10s', target: 10 },
+      { duration: '30s', target: 20 },
+      { duration: '30s', target: 30 },
+      { duration: '30s', target: 40 },
+      { duration: '30s', target: 50 },
+      // Optionally hold at 50:
+      // { duration: '30s', target: 50 },
+    ],
+  };
 
 // Load CSVs into memory (relative to k6 run directory)
 const customerSamples = new SharedArray('customers', function () {
