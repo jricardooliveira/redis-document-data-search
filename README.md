@@ -1,24 +1,24 @@
-# Redis Document Data Search (Go)
+# Valkey Document Data Search (Go)
 
-This project provides a Go-based CLI and API for generating, storing, indexing, and searching synthetic customer and event data in Redis using RedisJSON and RediSearch.
+This project provides a Go-based CLI and API for generating, storing, indexing, and searching synthetic customer and event data in Valkey (the open-source Redis fork—yes, I'm on team fork, but Redis folks are cool too!) using ValkeyJSON and ValkeySearch modules.
 
 ## Features
 - Generate random customer and event data
-- Store data in Redis as JSON documents
-- Create RediSearch indexes for fast querying
+- Store data in Valkey as JSON documents
+- Create ValkeySearch indexes for fast querying
 - Search for customers/events by identifiers
 - Print random customer/event JSON for testing
 - REST API and CLI interface
 
 ## Prerequisites
 - Go 1.18+
-- Redis server with RedisJSON and RediSearch modules enabled
+- Valkey server with ValkeyJSON and ValkeySearch modules enabled (Redis also works, but hey, forks are spicy!)
 
 ## Project Structure
 - `cmd/cli/main.go` — CLI entry point
 - `cmd/api/main.go` — API server entry point
 - `internal/faker/` — Random data generation library
-- `internal/redisutil/` — Redis and RediSearch utilities
+- `internal/valkeyutil/` — Valkey and ValkeySearch utilities
 
 ---
 
@@ -43,7 +43,7 @@ make clean
 ```
 
 ### Running the CLI
-Set the Redis URL with the `REDIS_URL` environment variable (optional, defaults to `redis://localhost:6379/0`):
+Set the Valkey/Redis URL with the `REDIS_URL` environment variable (optional, defaults to `redis://localhost:6379/0`):
 
 ```sh
 export REDIS_URL=redis://localhost:6379/0
@@ -57,13 +57,13 @@ Run the CLI:
 ## CLI Commands
 
 ### Generate Customers
-Generate and store N customers in Redis:
+Generate and store N customers in Valkey/Redis:
 ```sh
 ./redisdocsearch generate_customers 1000
 ```
 
 ### Generate Events
-Generate and store N events in Redis:
+Generate and store N events in Valkey/Redis:
 ```sh
 ./redisdocsearch generate_events 1000
 ```
@@ -149,6 +149,8 @@ REDIS_URL=redis://localhost:6379/0 API_PORT=8080 ./bin/redis-document-api
   { "status": "ok" }
   ```
 
+> **Note:** All search and indexing features require Valkey/Redis to have the RedisJSON and RediSearch modules enabled. These modules are supported in both (but Valkey is the cool new kid on the block!).
+
 ### 4. Search Customers
 - **Method:** `GET`
 - **Path:** `/search_customers`
@@ -206,12 +208,60 @@ REDIS_URL=redis://localhost:6379/0 API_PORT=8080 ./bin/redis-document-api
   ```json
   {
     "status": "ok",
-    "redis_url": "redis://localhost:6379/0",
+    "valkey_url": "redis://localhost:6379/0",
     "db_index": "0",
     "customer_count": 10000,
     "event_count": 10000
   }
   ```
+
+---
+
+## Performance Testing
+
+You can easily benchmark API search performance using real data from your Valkey/Redis database!
+
+### 1. Extract Sample Data for Testing
+If your database is already populated, use the provided script to extract a 5% random sample of customer and event records (with their indexed fields) into CSV files:
+
+```sh
+cd perf
+./sample_redis_to_csv.sh customer
+./sample_redis_to_csv.sh event
+```
+
+This will generate `customer_sample.csv` and `event_sample.csv` in the `perf/` directory, ready for performance testing.
+
+### 2. Install k6 (if needed)
+k6 is a modern open-source load testing tool. Install it with:
+
+- **macOS (Homebrew):**
+  ```sh
+  brew install k6
+  ```
+- **Linux (Debian/Ubuntu):**
+  ```sh
+  sudo apt update && sudo apt install -y gnupg ca-certificates
+  curl -s https://dl.k6.io/key.gpg | sudo apt-key add -
+  echo "deb https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+  sudo apt update && sudo apt install k6
+  ```
+- Or see: https://k6.io/docs/getting-started/installation/
+
+### 3. Run the Performance Test
+With your API running and sample CSVs in place, run:
+
+```sh
+cd perf
+k6 run k6_search_from_csv.js
+```
+
+The test will:
+- Randomly alternate between `/search_customers` and `/search_events` API endpoints
+- Pick real, indexed field values from your sampled CSVs for each request
+- Simulate concurrent users and measure latency, throughput, and errors
+
+You’ll get a detailed report on how your search endpoints perform with realistic data and queries!
 
 ---
 

@@ -1,3 +1,25 @@
+// Package redisutil provides utility functions for connecting to Redis, storing and retrieving JSON documents,
+// and general Redis operations for the CLI and API in this project.
+//
+// It abstracts RedisJSON and RediSearch usage, allowing the application to store, query, and manage
+// customer and event data as JSON documents in Redis. The functions here are used by both the API handlers
+// and CLI commands for all Redis interactions, including creating clients, storing data, and index management.
+//
+// Index Generation:
+//   Indexes are created using RediSearch to enable fast querying and filtering of customer and event JSON documents
+//   by key identifiers such as email, phone, visitor_id, call_id, and others. Without these indexes, searching for
+//   specific customers or events would require scanning all documents, which is slow and inefficient. Index creation
+//   is required for the full-text and field-level search features provided by the API and CLI, allowing for rapid
+//   lookups and complex queries over large datasets.
+//
+// Typical usage:
+//   client, err := redisutil.NewRedisClient(redisURL)
+//   err := redisutil.StoreJSON(client, "customer:123", customerObj)
+//   err := redisutil.CreateCustomerIndex(client)
+//   err := redisutil.CreateEventIndex(client)
+//
+// This package expects Redis to have RedisJSON and RediSearch modules enabled.
+
 package redisutil
 
 import (

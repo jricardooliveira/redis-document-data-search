@@ -71,5 +71,3 @@ func main() {
 		logger.Error("server error", "err", err)
 	}
 }
-
-// (Removed: now handled in each handler package)
