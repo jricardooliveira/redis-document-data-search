@@ -477,5 +477,33 @@ You’ll get a detailed report on how your search endpoints perform with realist
 
 ---
 
+## Performance Results (Mac M3, 32GB RAM)
+
+The following results were obtained running the k6 performance test on a Mac M3 with 32GB of memory:
+
+- **Test Data Volume:**
+  - 50,000 customers
+  - 2,000,000 events
+- **Memory Used by Redis/Valkey:** ~7.4 GB
+- **Throughput:**
+  - ~2,522,939 HTTP requests processed in 1m40s (~25,000 requests/sec sustained)
+- **Latency:**
+  - Average: 1.32ms
+  - Median: 1.29ms
+  - 90th percentile: 2.17ms
+  - 95th percentile: 2.49ms
+  - Max: 1.83s (rare outliers)
+- **Success Rate:**
+  - 99.99% of checks succeeded
+  - Only 71 failed event searches out of 1,261,996 (0.0056%)
+  - 0.00% HTTP request failures (71 out of 2,522,939)
+- **Network:**
+  - Data received: 5.1 GB
+  - Data sent: 271 MB
+
+These results demonstrate that the system can efficiently handle high-throughput, low-latency document search workloads at scale, with minimal errors and consistent performance on modern Apple silicon hardware.
+
+---
+
 ## License
 MIT
