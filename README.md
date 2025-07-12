@@ -249,6 +249,16 @@ REDIS_URL=redis://localhost:6379/0 API_PORT=8080 ./bin/redis-document-api
 
 You can easily benchmark API search performance using real data from your Valkey/Redis database!
 
+**Prerequisites:**
+
+1. **Populate the database:**
+   - Before running any performance tests, ensure your Redis database is populated with test data using the `generate_*` commands (e.g., `generate_customers`, `generate_events`).
+   - See the [CLI Usage](#cli-usage) section below for instructions on generating and populating data.
+2. **Extract sample data:**
+   - Use the provided script to extract a 5% random sample of customer and event records (with their indexed fields) into CSV files. This step reads from the populated Redis database.
+3. **Run performance tests:**
+   - Only after extracting the sample CSVs can you run the k6 performance tests, as these files are required for generating the HTTP requests.
+
 ### 1. Extract Sample Data for Testing
 If your database is already populated, use the provided script to extract a 5% random sample of customer and event records (with their indexed fields) into CSV files:
 
