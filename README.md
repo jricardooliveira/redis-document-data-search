@@ -68,6 +68,98 @@ Generate and store N events in Valkey/Redis:
 ./bin/redis-document-cli generate_events 1000
 ```
 
+### Example Records Stored in Redis
+
+Below are examples of the JSON structure for both customer and event records as stored in Redis. These are helpful for understanding the data model and for generating your own test data.
+
+#### Example: Customer Record
+
+```json
+{
+  "query_time_ms": 704,
+  "result": {
+    "confidenceScore": 0.9336259178648032,
+    "createdAt": "2011-04-05T02:47:52Z",
+    "customerId": "1026be83-1ee2-405f-8ec2-e96ff1a0447f",
+    "deleted": 0,
+    "identifiers": {
+      "session_ids": [
+        "1d586573-48bd-40d6-be99-0f55067e6aac",
+        "c233b9da-5c9a-45fe-89e7-f995db960f59"
+      ],
+      "visitor_ids": [
+        "06ced6eb-58a5-4f29-bba0-b28f5bda3e5b",
+        "12e6ec8e-8435-4e22-827b-b0d366695054"
+      ]
+    },
+    "merged": 1,
+    "personalData": {
+      "company": "Jurispect",
+      "inferred_location": "Colorado Springs, Chad",
+      "name": "Berneice Nikolaus",
+      "title": "Engineer"
+    },
+    "primaryIdentifiers": {
+      "email": "elroygleichner@denesik.net",
+      "phone": "7885540765"
+    },
+    "updatedAt": "1907-04-25T05:53:38Z"
+  }
+}
+```
+
+#### Example: Event Record
+
+```json
+{
+  "query_time_ms": 1068,
+  "result": {
+    "data": {
+      "cookie": "cookie_yTYxZnVY",
+      "email": "FnAjVGtPjV@example.com",
+      "phone": "mGJzxUDIAX"
+    },
+    "event_id": "evt_GxHerj",
+    "event_type": "visitor_event",
+    "identifiers": {
+      "cmec_contact_call_id": "call_EkcgN",
+      "cmec_contact_chat_id": "chat_idXJv",
+      "cmec_contact_external_id": "ext_wHzAe",
+      "cmec_contact_form2lead_id": "f2l_KkarS",
+      "cmec_contact_tickets_id": "ticket_fhChr",
+      "cmec_visitor_id": "RCu"
+    },
+    "source": "rGnzBVZY",
+    "timestamp": "2025-07-08T18:30:19Z",
+    "visitor_data": {
+      "behavior": {
+        "interactions": [
+          "scroll",
+          "click_cta",
+          "hover"
+        ],
+        "pages_viewed": 2,
+        "time_on_site": 354
+      },
+      "device_info": {
+        "device_type": "mobile",
+        "ip_address": "192.168.133.97",
+        "user_agent": "KsAslrZeXe"
+      },
+      "page_url": "https://sitels9t9.com/pagehe3q0mbdv3",
+      "referrer": "/internal/path",
+      "session_id": "qSo",
+      "utm_params": {
+        "utm_campaign": "campMhsER",
+        "utm_medium": "medPstqW",
+        "utm_source": "srcpFwi"
+      },
+      "visitor_id": "RCu"
+    }
+  }
+}
+```
+
 ### Create Indexes
 Create RediSearch indexes for customers and events:
 ```sh
