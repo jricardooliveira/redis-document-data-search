@@ -56,13 +56,13 @@ Run the CLI:
 
 ## CLI Commands
 
-### Store Customers
+### Generate Customers
 Generate and store N customers in Redis:
 ```sh
 ./redisdocsearch generate_customers 1000
 ```
 
-### Store Events
+### Generate Events
 Generate and store N events in Redis:
 ```sh
 ./redisdocsearch generate_events 1000
@@ -113,7 +113,7 @@ REDIS_URL=redis://localhost:6379/0 API_PORT=8080 ./bin/redis-document-api
 
 ## API Endpoints
 
-### 1. Store Customers
+### 1. Generate Customers
 - **Method:** `POST`
 - **Path:** `/generate_customers`
 - **Query Parameters:**
@@ -127,7 +127,7 @@ REDIS_URL=redis://localhost:6379/0 API_PORT=8080 ./bin/redis-document-api
   { "status": "ok", "stored": 10000 }
   ```
 
-### 2. Store Events
+### 2. Generate Events
 - **Method:** `POST`
 - **Path:** `/generate_events`
 - **Query Parameters:**
