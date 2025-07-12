@@ -1,6 +1,23 @@
 # Valkey Document Data Search (Go)
 
-This project provides a Go-based CLI and API for generating, storing, indexing, and searching synthetic customer and event data in Valkey/Redis (the open-source Redis fork—yes, I'm on team fork, but Redis folks are cool too!) using ValkeyJSON and ValkeySearch modules.
+This project provides a Go-based CLI and API for generating, storing, indexing, and searching synthetic customer and event data in Valkey/Redis using ValkeyJSON and ValkeySearch modules.
+
+---
+
+## Table of Contents
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Project Structure](#project-structure)
+- [Installation & Setup](#installation--setup)
+- [Usage](#usage)
+  - [CLI Usage](#cli-usage)
+  - [API Usage](#api-usage)
+- [System Resource Monitoring & Best Practices](#system-resource-monitoring--best-practices)
+- [Performance Testing](#performance-testing)
+- [Performance Results](#performance-results-mac-m3-32gb-ram)
+- [License](#license)
+
+---
 
 ## Features
 - Generate random customer and event data
@@ -12,7 +29,7 @@ This project provides a Go-based CLI and API for generating, storing, indexing, 
 
 ## Prerequisites
 - Go 1.18+
-- Valkey/Redis server with ValkeyJSON and ValkeySearch modules enabled (Redis also works, but hey, forks are spicy!)
+- Valkey/Redis server with ValkeyJSON and ValkeySearch modules enabled (Redis also works)
 
 ## Project Structure
 - `cmd/cli/main.go` — CLI entry point
@@ -24,39 +41,147 @@ This project provides a Go-based CLI and API for generating, storing, indexing, 
 
 ---
 
-## System Resource Monitoring
+## Installation & Setup
 
+### Building Binaries
+This project uses a Makefile to build both the CLI and API binaries and place them in the `bin/` directory.
+
+```sh
+make
+```
+
+This will generate:
+- `bin/redis-document-cli` — CLI binary
+- `bin/redis-document-api` — API server binary
+
+### Clean Binaries
+```sh
+make clean
+```
+
+### Environment Variables
+Set the Valkey/Redis URL with the `REDIS_URL` environment variable (optional, defaults to `redis://localhost:6379/0`):
+
+```sh
+export REDIS_URL=redis://localhost:6379/0
+```
+
+---
+
+## Usage
+
+### CLI Usage
+
+Run the CLI:
+```sh
+./bin/redis-document-cli <command> [args]
+```
+
+#### CLI Commands
+- **Generate Customers:**
+  ```sh
+  ./bin/redis-document-cli generate_customers 1000
+  ```
+- **Generate Events:**
+  ```sh
+  ./bin/redis-document-cli generate_events 1000
+  ```
+- **Create Indexes:**
+  ```sh
+  ./bin/redis-document-cli create_indexes
+  ```
+- **Search Customers:**
+  ```sh
+  ./bin/redis-document-cli search_customers email=foo@bar.com phone=123456789
+  ```
+- **Search Events:**
+  ```sh
+  ./bin/redis-document-cli search_events visitor_id=123 call_id=abc
+  ```
+- **Print Random Customer/Event:**
+  ```sh
+  ./bin/redis-document-cli customer
+  ./bin/redis-document-cli event
+  ```
+
+#### Example Records Stored in Valkey/Redis
+- **Customer Record:**
+  ```json
+  {
+    "query_time_ms": 704,
+    "result": {
+      ...
+    }
+  }
+  ```
+- **Event Record:**
+  ```json
+  {
+    "query_time_ms": 1068,
+    "result": {
+      ...
+    }
+  }
+  ```
+
+---
+
+### API Usage
+
+#### Running the API Server
+After building with `make`, run the API server binary:
+```sh
+./bin/redis-document-api
+```
+Or set environment variables for Valkey/Redis and port:
+```sh
+REDIS_URL=redis://localhost:6379/0 API_PORT=8080 ./bin/redis-document-api
+```
+
+#### API Endpoints
+- **Generate Customers:**
+  - `POST /generate_customers?count=1000`
+- **Generate Events:**
+  - `POST /generate_events?count=1000`
+- **Create Indexes:**
+  - `POST /create_indexes`
+- **Search Customers:**
+  - `GET /search_customers?email=foo@bar.com`
+- **Search Events:**
+  - `GET /search_events?visitor_id=123&call_id=abc`
+- **Get Random Event:**
+  - `GET /random_event`
+- **Get Random Customer:**
+  - `GET /random_customer`
+- **Health Check:**
+  - `GET /healthz`
+
+See the original README for detailed request/response examples.
+
+---
+
+## System Resource Monitoring & Best Practices
+
+### System Resource Monitoring
 To monitor open files, sockets, and resource usage while running the API or CLI (especially during load testing), use:
-
 ```sh
 ./scripts/monitor_resources.sh
 ```
-
 This script prints:
 - Current and max open files (system-wide and per-process)
 - Open sockets to Redis
 - Sockets in TIME_WAIT state
 
-This helps you detect resource exhaustion and debug connection issues.
-
-## Platform-Specific Resource Limit Logging
-
+### Platform-Specific Resource Limit Logging
 The application logs OS resource limits (open files, processes) at startup using platform-specific code:
 - On Linux: logs both open files and process limits.
 - On macOS: logs open files (process limits are not available).
 
-## Redis Client Usage (Best Practice)
-
-**Note:**  The API server uses a singleton Redis client with connection pooling for all HTTP requests.
-
+### Redis Client Usage (Best Practice)
+The API server uses a singleton Redis client with connection pooling for all HTTP requests.
 **Do not create a new Redis client per request**—this prevents connection leaks and resource exhaustion.
 
-
-# CLI
-
-## Building and Running (Recommended)
-
-This project uses a Makefile to build both the CLI and API binaries and place them in the `bin/` directory.
+---
 
 ### Build both binaries
 ```sh
