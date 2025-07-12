@@ -9,10 +9,10 @@ const BASE_URL = 'http://localhost:8080';
 export const options = {
     stages: [
       { duration: '10s', target: 10 },
-      { duration: '30s', target: 20 },
-      { duration: '30s', target: 30 },
-      { duration: '30s', target: 40 },
-      { duration: '30s', target: 50 },
+      { duration: '10s', target: 20 },
+      { duration: '10s', target: 30 },
+      { duration: '10s', target: 40 },
+      { duration: '60s', target: 50 },
       // Optionally hold at 50:
       // { duration: '30s', target: 50 },
     ],
@@ -69,42 +69,44 @@ function pickRandom(arr) {
 }
 
 export default function () {
-  if (Math.random() < 0.5 && customerSamples.length > 0) {
-    // Random customer sample and indexed field (only non-empty fields)
-    const rec = pickRandom(customerSamples);
-    const fields = ['email', 'phone', 'visitor_id'];
-    const nonEmptyFields = fields.filter(f => rec[f] && rec[f].trim() !== '' && rec[f].toLowerCase() !== 'null');
-    if (nonEmptyFields.length > 0) {
-      const field = pickRandom(nonEmptyFields);
-      const value = rec[field];
-      const url = `${BASE_URL}/search_customers?${field}=${encodeURIComponent(value)}`;
-      let res = http.get(url);
-      if (res.status !== 200) {
-        console.log(`[CUSTOMER FAIL] Status: ${res.status} URL: ${url} Body: ${res.body && res.body.slice(0, 200)}`);
+    if (Math.random() < 0.5 && customerSamples.length > 0) {
+      const rec = pickRandom(customerSamples);
+      const fields = ['email', 'phone', 'visitor_id'];
+      const nonEmptyFields = fields.filter(f => rec[f] && rec[f].trim() !== '' && rec[f].toLowerCase() !== 'null');
+      if (nonEmptyFields.length > 0) {
+        const field = pickRandom(nonEmptyFields);
+        const value = rec[field];
+        const url = `${BASE_URL}/search_customers?${field}=${encodeURIComponent(value)}`;
+        let res = http.get(url, {
+          tags: { name: 'SearchCustomers' },
+        });
+        if (res.status !== 200) {
+          console.log(`[CUSTOMER FAIL] Status: ${res.status} URL: ${url} Body: ${res.body && res.body.slice(0, 200)}`);
+        }
+        check(res, {
+          'customer search status is 200': (r) => r.status === 200,
+          'customer search has results': (r) => r.body && r.body.includes('results'),
+        });
       }
-      check(res, {
-        'customer search status is 200': (r) => r.status === 200,
-        'customer search has results': (r) => r.body && r.body.includes('results'),
-      });
-    }
-  } else if (eventSamples.length > 0) {
-    // Random event sample and indexed field (only non-empty fields)
-    const rec = pickRandom(eventSamples);
-    const fields = ['visitor_id', 'call_id', 'chat_id', 'external_id', 'form2lead_id', 'tickets_id'];
-    const nonEmptyFields = fields.filter(f => rec[f] && rec[f].trim() !== '' && rec[f].toLowerCase() !== 'null');
-    if (nonEmptyFields.length > 0) {
-      const field = pickRandom(nonEmptyFields);
-      const value = rec[field];
-      const url = `${BASE_URL}/search_events?${field}=${encodeURIComponent(value)}`;
-      let res = http.get(url);
-      if (res.status !== 200) {
-        console.log(`[EVENT FAIL] Status: ${res.status} URL: ${url} Body: ${res.body && res.body.slice(0, 200)}`);
+    } else if (eventSamples.length > 0) {
+      const rec = pickRandom(eventSamples);
+      const fields = ['visitor_id', 'call_id', 'chat_id', 'external_id', 'form2lead_id', 'tickets_id'];
+      const nonEmptyFields = fields.filter(f => rec[f] && rec[f].trim() !== '' && rec[f].toLowerCase() !== 'null');
+      if (nonEmptyFields.length > 0) {
+        const field = pickRandom(nonEmptyFields);
+        const value = rec[field];
+        const url = `${BASE_URL}/search_events?${field}=${encodeURIComponent(value)}`;
+        let res = http.get(url, {
+          tags: { name: 'SearchEvents' },
+        });
+        if (res.status !== 200) {
+          console.log(`[EVENT FAIL] Status: ${res.status} URL: ${url} Body: ${res.body && res.body.slice(0, 200)}`);
+        }
+        check(res, {
+          'event search status is 200': (r) => r.status === 200,
+          'event search has results': (r) => r.body && r.body.includes('results'),
+        });
       }
-      check(res, {
-        'event search status is 200': (r) => r.status === 200,
-        'event search has results': (r) => r.body && r.body.includes('results'),
-      });
     }
+    //sleep(1);
   }
-  sleep(1);
-}

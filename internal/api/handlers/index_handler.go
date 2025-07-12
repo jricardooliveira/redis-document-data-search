@@ -9,10 +9,7 @@ import (
 func CreateIndexesHandler(redisURL string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		start := time.Now()
-		client, err := redisutil.NewRedisClient(redisURL)
-		if err != nil {
-			return c.Status(500).JSON(fiber.Map{"error": "internal server error: redis client"})
-		}
+		client := redisutil.GetSingletonRedisClient(redisURL)
 		err1 := redisutil.CreateCustomerIndex(client)
 		err2 := redisutil.CreateEventIndex(client)
 		queryTimeMs := time.Since(start).Milliseconds()

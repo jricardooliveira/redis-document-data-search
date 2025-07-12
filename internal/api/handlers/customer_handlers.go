@@ -18,10 +18,7 @@ func GenerateCustomersHandler(redisURL string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		count, _ := strconv.Atoi(c.Query("count", "1000"))
 		start := time.Now()
-		client, err := redisutil.NewRedisClient(redisURL)
-		if err != nil {
-			return c.Status(500).JSON(fiber.Map{"error": "internal server error: redis client"})
-		}
+		client := redisutil.GetSingletonRedisClient(redisURL)
 
 		concurrency := runtime.NumCPU() / 2
 		if concurrency < 1 {
@@ -61,10 +58,7 @@ func GenerateCustomersHandler(redisURL string) fiber.Handler {
 
 func SearchCustomersHandler(redisURL string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		client, err := redisutil.NewRedisClient(redisURL)
-		if err != nil {
-			return c.Status(500).JSON(fiber.Map{"error": "internal server error: redis client"})
-		}
+		client := redisutil.GetSingletonRedisClient(redisURL)
 		identifiers := map[string]string{}
 		for k, v := range c.Queries() {
 			if k != "limit" && k != "offset" {
@@ -94,11 +88,7 @@ func RandomCustomerHandler(redisURL string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		start := time.Now()
 		ctx := context.Background()
-		client, err := redisutil.NewRedisClient(redisURL)
-		if err != nil {
-			queryTimeMs := time.Since(start).Milliseconds()
-			return c.Status(500).JSON(fiber.Map{"error": "internal server error: redis client", "query_time_ms": queryTimeMs})
-		}
+		client := redisutil.GetSingletonRedisClient(redisURL)
 		iter := client.Scan(ctx, 0, "customer:*", 1000).Iterator()
 		var keys []string
 		for iter.Next(ctx) {

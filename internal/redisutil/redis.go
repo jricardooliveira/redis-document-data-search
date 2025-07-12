@@ -27,6 +27,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -38,6 +39,11 @@ func NewRedisClient(redisURL string) (*redis.Client, error) {
 	if err != nil {
 		return nil, fmt.Errorf("invalid Redis URL: %w", err)
 	}
+	opt.PoolSize = 512 // Limita o pool de conexões a 512
+	opt.DialTimeout = 5 * time.Second
+	opt.ReadTimeout = 3 * time.Second
+	opt.WriteTimeout = 3 * time.Second
+	opt.PoolTimeout = 4 * time.Second
 	return redis.NewClient(opt), nil
 }
 

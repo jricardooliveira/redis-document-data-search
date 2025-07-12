@@ -20,13 +20,7 @@ func DocumentByKeyHandler(redisURL string) fiber.Handler {
 				"query_time_ms": time.Since(start).Milliseconds(),
 			})
 		}
-		client, err := redisutil.NewRedisClient(redisURL)
-		if err != nil {
-			return c.Status(500).JSON(fiber.Map{
-				"error":         "internal server error: redis client",
-				"query_time_ms": time.Since(start).Milliseconds(),
-			})
-		}
+		client := redisutil.GetSingletonRedisClient(redisURL)
 		ctx := context.Background()
 		jsonStr, err := client.Do(ctx, "JSON.GET", key, "$").Text()
 		if err != nil {

@@ -9,6 +9,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jricardooliveira/redis-document-data-search/internal/api/handlers"
+	"github.com/jricardooliveira/redis-document-data-search/internal/monitor"
 )
 
 // Configuration via environment variables:
@@ -21,6 +22,7 @@ func main() {
 
 	app := fiber.New()
 	app.Use(func(c *fiber.Ctx) error {
+		monitor.CheckLimitsEveryN(200)
 		start := time.Now()
 		err := c.Next()
 		dur := time.Since(start)

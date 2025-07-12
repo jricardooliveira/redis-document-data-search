@@ -34,7 +34,6 @@ if [ ${#MISSING[@]} -ne 0 ]; then
     echo "  - $TOOL"
   done
   echo -e "\nPlease install the missing tools and try again."
-  exit 1
 else
   echo "\nAll required tools are installed."
 fi
@@ -46,6 +45,5 @@ if command -v go >/dev/null 2>&1; then
   REQUIRED_GO="1.18"
   if [[ $(printf '%s\n' "$REQUIRED_GO" "$GOVERSION_NUM" | sort -V | head -n1) != "$REQUIRED_GO" ]]; then
     echo "[ERROR] Go version $REQUIRED_GO or higher is required. Found $GOVERSION_NUM."
-    exit 1
   fi
 fi

@@ -1,10 +1,10 @@
 # Valkey Document Data Search (Go)
 
-This project provides a Go-based CLI and API for generating, storing, indexing, and searching synthetic customer and event data in Valkey (the open-source Redis fork—yes, I'm on team fork, but Redis folks are cool too!) using ValkeyJSON and ValkeySearch modules.
+This project provides a Go-based CLI and API for generating, storing, indexing, and searching synthetic customer and event data in Valkey/Redis (the open-source Redis fork—yes, I'm on team fork, but Redis folks are cool too!) using ValkeyJSON and ValkeySearch modules.
 
 ## Features
 - Generate random customer and event data
-- Store data in Valkey as JSON documents
+- Store data in Valkey/Redis as JSON documents
 - Create ValkeySearch indexes for fast querying
 - Search for customers/events by identifiers
 - Print random customer/event JSON for testing
@@ -12,13 +12,13 @@ This project provides a Go-based CLI and API for generating, storing, indexing, 
 
 ## Prerequisites
 - Go 1.18+
-- Valkey server with ValkeyJSON and ValkeySearch modules enabled (Redis also works, but hey, forks are spicy!)
+- Valkey/Redis server with ValkeyJSON and ValkeySearch modules enabled (Redis also works, but hey, forks are spicy!)
 
 ## Project Structure
 - `cmd/cli/main.go` — CLI entry point
 - `cmd/api/main.go` — API server entry point
 - `internal/faker/` — Random data generation library
-- `internal/valkeyutil/` — Valkey and ValkeySearch utilities
+- `internal/valkeyutil/` — Valkey/Redis and ValkeySearch utilities
 
 ---
 
@@ -68,9 +68,9 @@ Generate and store N events in Valkey/Redis:
 ./bin/redis-document-cli generate_events 1000
 ```
 
-### Example Records Stored in Redis
+### Example Records Stored in Valkey/Redis
 
-Below are examples of the JSON structure for both customer and event records as stored in Redis. These are helpful for understanding the data model and for generating your own test data.
+Below are examples of the JSON structure for both customer and event records as stored in Valkey/Redis. These are helpful for understanding the data model and for generating your own test data.
 
 #### Example: Customer Record
 
@@ -197,7 +197,7 @@ After building with `make`, run the API server binary:
 ./bin/redis-document-api
 ```
 
-Or set environment variables for Redis and port:
+Or set environment variables for Valkey/Redis and port:
 
 ```sh
 REDIS_URL=redis://localhost:6379/0 API_PORT=8080 ./bin/redis-document-api
@@ -344,10 +344,10 @@ You can easily benchmark API search performance using real data from your Valkey
 **Prerequisites:**
 
 1. **Populate the database:**
-   - Before running any performance tests, ensure your Redis database is populated with test data using the `generate_*` commands (e.g., `generate_customers`, `generate_events`).
+   - Before running any performance tests, ensure your Valkey/Redis database is populated with test data using the `generate_*` commands (e.g., `generate_customers`, `generate_events`).
    - See the [CLI Usage](#cli-usage) section below for instructions on generating and populating data.
 2. **Extract sample data:**
-   - Use the provided script to extract a 5% random sample of customer and event records (with their indexed fields) into CSV files. This step reads from the populated Redis database.
+   - Use the provided script to extract a 5% random sample of customer and event records (with their indexed fields) into CSV files. This step reads from the populated Valkey/Redis database.
 3. **Run performance tests:**
    - Only after extracting the sample CSVs can you run the k6 performance tests, as these files are required for generating the HTTP requests.
 
@@ -375,7 +375,7 @@ This means the total number of possible different requests performed is equal to
 number of indexed fields × number of records in the CSV
 ```
 
-This approach ensures the benchmark covers all indexed fields and a diverse set of real data from your database.
+This approach ensures the benchmark covers all indexed fields and a diverse set of real data from your Valkey/Redis database.
 
 
 ### 2. Install k6 (if needed)
