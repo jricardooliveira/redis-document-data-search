@@ -310,6 +310,42 @@ cd perf
 k6 run k6_search_from_csv.js
 ```
 
+#### Example: Staged Ramp-Up with Web Dashboard
+
+To simulate a gradual increase in load (e.g., 10 users for 10 seconds, then add 10 more every 30 seconds until reaching 50 users), you must configure the stages in your k6 script (not via CLI):
+
+At the top of your `perf/k6_search_from_csv.js` file, set:
+
+```js
+export const options = {
+  stages: [
+    { duration: '10s', target: 10 },
+    { duration: '30s', target: 20 },
+    { duration: '30s', target: 30 },
+    { duration: '30s', target: 40 },
+    { duration: '30s', target: 50 },
+    // Optionally hold at 50:
+    // { duration: '30s', target: 50 },
+  ],
+};
+```
+
+Then, run your test with the web dashboard enabled:
+
+```sh
+cd perf
+k6 run --out=web-dashboard k6_search_from_csv.js
+```
+
+- This will:
+  - Start with 10 users for 10 seconds.
+  - Ramp up to 20 users over the next 30 seconds, then to 30, 40, and finally 50 users, each over 30 seconds.
+  - The `--out=web-dashboard` flag launches a local web dashboard (usually at http://localhost:5665/) so you can monitor the test in real time.
+
+You can adjust the stage durations and user counts as needed for your own testing scenarios.
+
+> **Note:** The `--stages` CLI flag is not supported in most k6 versions. Always configure ramp-up stages in your script's `options` block.
+
 The test will:
 - Randomly alternate between `/search_customers` and `/search_events` API endpoints
 - Pick real, indexed field values from your sampled CSVs for each request
