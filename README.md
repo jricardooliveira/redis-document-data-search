@@ -59,38 +59,38 @@ Run the CLI:
 ### Generate Customers
 Generate and store N customers in Valkey/Redis:
 ```sh
-./redisdocsearch generate_customers 1000
+./bin/redis-document-cli generate_customers 1000
 ```
 
 ### Generate Events
 Generate and store N events in Valkey/Redis:
 ```sh
-./redisdocsearch generate_events 1000
+./bin/redis-document-cli generate_events 1000
 ```
 
 ### Create Indexes
 Create RediSearch indexes for customers and events:
 ```sh
-./redisdocsearch create_indexes
+./bin/redis-document-cli create_indexes
 ```
 
 ### Search Customers
 Search for customers by identifiers (e.g., email, phone, visitor_id):
 ```sh
-./redisdocsearch search_customers email=foo@bar.com phone=123456789
+./bin/redis-document-cli search_customers email=foo@bar.com phone=123456789
 ```
 
 ### Search Events
 Search for events by identifiers (e.g., visitor_id, call_id, chat_id):
 ```sh
-./redisdocsearch search_events visitor_id=123 call_id=abc
+./bin/redis-document-cli search_events visitor_id=123 call_id=abc
 ```
 
 ### Print Random Customer/Event
 Print a random customer or event as JSON (for testing):
 ```sh
-./redisdocsearch customer
-./redisdocsearch event
+./bin/redis-document-cli customer
+./bin/redis-document-cli event
 ```
 
 ---
@@ -118,13 +118,14 @@ REDIS_URL=redis://localhost:6379/0 API_PORT=8080 ./bin/redis-document-api
 - **Path:** `/generate_customers`
 - **Query Parameters:**
   - `count` (optional, default: `1000`): Number of customers to generate and store.
+- **Note:** Generation is parallelized using half of available CPU cores for fast bulk data creation.
 - **Example:**
   ```sh
   curl -X POST "http://localhost:8080/generate_customers?count=10000"
   ```
 - **Response:**
   ```json
-  { "status": "ok", "stored": 10000 }
+  { "status": "ok", "stored": 10000, "query_time_ms": 1234 }
   ```
 
 ### 2. Generate Events
@@ -132,13 +133,14 @@ REDIS_URL=redis://localhost:6379/0 API_PORT=8080 ./bin/redis-document-api
 - **Path:** `/generate_events`
 - **Query Parameters:**
   - `count` (optional, default: `1000`): Number of events to generate and store.
+- **Note:** Generation is parallelized using half of available CPU cores for fast bulk data creation.
 - **Example:**
   ```sh
   curl -X POST "http://localhost:8080/generate_events?count=10000"
   ```
 - **Response:**
   ```json
-  { "status": "ok", "stored": 10000 }
+  { "status": "ok", "stored": 10000, "query_time_ms": 1234 }
   ```
 
 ### 3. Create Indexes
@@ -146,7 +148,7 @@ REDIS_URL=redis://localhost:6379/0 API_PORT=8080 ./bin/redis-document-api
 - **Path:** `/create_indexes`
 - **Response:**
   ```json
-  { "status": "ok" }
+  { "status": "ok", "query_time_ms": 7 }
   ```
 
 > **Note:** All search and indexing features require Valkey/Redis to have the RedisJSON and RediSearch modules enabled. These modules are supported in both (but Valkey is the cool new kid on the block!).
@@ -164,7 +166,7 @@ REDIS_URL=redis://localhost:6379/0 API_PORT=8080 ./bin/redis-document-api
   ```
 - **Response:**
   ```json
-  { "results": [ ... ], "query_time_μs": 1234 }
+  { "results": [ ... ], "query_time_ms": 1234 }
   ```
 
 ### 5. Search Events
@@ -180,7 +182,7 @@ REDIS_URL=redis://localhost:6379/0 API_PORT=8080 ./bin/redis-document-api
   ```
 - **Response:**
   ```json
-  { "results": [ ... ], "query_time_μs": 1234 }
+  { "results": [ ... ], "query_time_ms": 1234 }
   ```
 
 ### 6. Get Random Event
@@ -189,7 +191,7 @@ REDIS_URL=redis://localhost:6379/0 API_PORT=8080 ./bin/redis-document-api
 - **Response:**
   A random event as JSON, or
   ```json
-  { "error": "no events found" }
+  { "error": "no events found", "query_time_ms": 7 }
   ```
 
 ### 7. Get Random Customer
@@ -198,7 +200,7 @@ REDIS_URL=redis://localhost:6379/0 API_PORT=8080 ./bin/redis-document-api
 - **Response:**
   A random customer as JSON, or
   ```json
-  { "error": "no customers found" }
+  { "error": "no customers found", "query_time_ms": 7 }
   ```
 
 ### 8. Health Check
@@ -208,10 +210,36 @@ REDIS_URL=redis://localhost:6379/0 API_PORT=8080 ./bin/redis-document-api
   ```json
   {
     "status": "ok",
-    "valkey_url": "redis://localhost:6379/0",
+    "redis_url": "redis://localhost:6379/0",
     "db_index": "0",
     "customer_count": 10000,
-    "event_count": 10000
+    "event_count": 10000,
+    "redis_memory": {
+      "used_memory_bytes": 12345678,
+      "used_memory_human": "12.3M"
+    },
+    "indexes": [
+      {
+        "name": "customerIdx",
+        "fields": [
+          {"path": "$.primaryIdentifiers.email", "alias": "email", "type": "TEXT"},
+          {"path": "$.primaryIdentifiers.phone", "alias": "phone", "type": "TEXT"},
+          {"path": "$.primaryIdentifiers.cmec_visitor_id", "alias": "visitor_id", "type": "TEXT"}
+        ]
+      },
+      {
+        "name": "eventIdx",
+        "fields": [
+          {"path": "$.identifiers.cmec_visitor_id", "alias": "visitor_id", "type": "TEXT"},
+          {"path": "$.identifiers.cmec_contact_call_id", "alias": "call_id", "type": "TEXT"},
+          {"path": "$.identifiers.cmec_contact_chat_id", "alias": "chat_id", "type": "TEXT"},
+          {"path": "$.identifiers.cmec_contact_external_id", "alias": "external_id", "type": "TEXT"},
+          {"path": "$.identifiers.cmec_contact_form2lead_id", "alias": "form2lead_id", "type": "TEXT"},
+          {"path": "$.identifiers.cmec_contact_tickets_id", "alias": "tickets_id", "type": "TEXT"}
+        ]
+      }
+    ],
+    "query_time_ms": 7
   }
   ```
 
@@ -231,6 +259,22 @@ cd perf
 ```
 
 This will generate `customer_sample.csv` and `event_sample.csv` in the `perf/` directory, ready for performance testing.
+
+**How the Sample CSVs Are Used for Testing**
+
+The extracted sample CSV files serve as test data for generating a wide range of HTTP requests to the API. During performance testing, the k6 script will:
+
+- Select one of the indexed fields (columns) from the CSV for each request.
+- Use the field values from each record to construct search queries against the API.
+
+This means the total number of possible different requests performed is equal to:
+
+```
+number of indexed fields × number of records in the CSV
+```
+
+This approach ensures the benchmark covers all indexed fields and a diverse set of real data from your database.
+
 
 ### 2. Install k6 (if needed)
 k6 is a modern open-source load testing tool. Install it with:
