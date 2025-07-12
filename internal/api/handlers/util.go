@@ -11,7 +11,7 @@ import (
 // PrettyJSON returns indented JSON as HTML <pre> for debugging (optional, can be replaced with normal JSON)
 func PrettyJSON(c *fiber.Ctx, v interface{}) error {
 	pretty, _ := json.MarshalIndent(v, "", "  ")
-	return c.Type("html", "utf-8").SendString("<pre>" + string(pretty) + "</pre>")
+	return c.Type("json").Send(pretty)
 }
 
 func escapeRediSearchValue(val string) string {

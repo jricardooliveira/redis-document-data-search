@@ -66,6 +66,7 @@ func main() {
 	app.Get("/random_event", handlers.RandomEventHandler(redisURL))
 	app.Get("/random_customer", handlers.RandomCustomerHandler(redisURL))
 	app.Get("/healthz", handlers.HealthHandler(redisURL))
+	app.Get("/document_by_key", handlers.DocumentByKeyHandler(redisURL))
 
 	logger.Info("server starting", "port", port)
 	if err := app.Listen(":" + port); err != nil {

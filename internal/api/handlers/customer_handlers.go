@@ -6,6 +6,8 @@ import (
 	"math/rand"
 	"strconv"
 	"time"
+	"runtime"
+	"sync"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jricardooliveira/redis-document-data-search/internal/faker"
@@ -20,14 +22,37 @@ func GenerateCustomersHandler(redisURL string) fiber.Handler {
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{"error": "internal server error: redis client"})
 		}
+
+		concurrency := runtime.NumCPU() / 2
+		if concurrency < 1 {
+			concurrency = 1
+		}
+		if count < concurrency {
+			concurrency = count
+		}
+		var wg sync.WaitGroup
+		sem := make(chan struct{}, concurrency)
+		errCh := make(chan error, count)
+
 		for i := 0; i < count; i++ {
-			customer := faker.RandomCustomer()
-			key := "customer:" + strconv.Itoa(i)
-			err := redisutil.StoreJSON(client, key, customer)
-			if err != nil {
-				queryTimeMs := time.Since(start).Milliseconds()
-				return c.Status(500).JSON(fiber.Map{"error": err.Error(), "query_time_ms": queryTimeMs})
-			}
+			wg.Add(1)
+			sem <- struct{}{}
+			go func(i int) {
+				defer wg.Done()
+				customer := faker.RandomCustomer()
+				key := "customer:" + strconv.Itoa(i)
+				if err := redisutil.StoreJSON(client, key, customer); err != nil {
+					errCh <- err
+				}
+				<-sem
+			}(i)
+		}
+		wg.Wait()
+		close(errCh)
+
+		if len(errCh) > 0 {
+			queryTimeMs := time.Since(start).Milliseconds()
+			return c.Status(500).JSON(fiber.Map{"error": (<-errCh).Error(), "query_time_ms": queryTimeMs})
 		}
 		queryTimeMs := time.Since(start).Milliseconds()
 		return PrettyJSON(c, fiber.Map{"status": "ok", "stored": count, "query_time_ms": queryTimeMs})
