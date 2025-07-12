@@ -2,8 +2,9 @@ package cli
 
 import (
 	"os"
-	"github.com/spf13/cobra"
+
 	"github.com/jricardooliveira/redis-document-data-search/internal/cli/commands"
+	"github.com/spf13/cobra"
 )
 
 var rootCmd = &cobra.Command{
@@ -19,6 +20,8 @@ func init() {
 	rootCmd.AddCommand(commands.SearchEventsCmd)
 	rootCmd.AddCommand(commands.CustomerCmd)
 	rootCmd.AddCommand(commands.EventCmd)
+	rootCmd.AddCommand(commands.SampleToCSVCommand)
+
 }
 
 func Execute() {

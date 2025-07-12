@@ -5,32 +5,38 @@
 
 set -e
 
-REQUIRED_TOOLS=(
-  "go"
-  "redis-cli"
-  "jq"
-  "curl"
-  "make"
-  "shuf"
+declare -A TOOL_EXPLANATIONS
+TOOL_EXPLANATIONS=(
+  ["go"]="Go: Required to build and run the backend and CLI applications."
+  ["redis-cli"]="redis-cli: Used for interacting with Redis/Valkey directly, especially for listing keys."
+  ["jq"]="jq: Used for parsing and extracting fields from JSON in shell scripts."
+  ["curl"]="curl: Used for making HTTP requests to the API endpoints from scripts."
+  ["make"]="make: Used to build, test, and manage the project via the Makefile."
+  ["shuf"]="shuf: Used in scripts to randomly sample keys or lines from files."
 )
 
+REQUIRED_TOOLS=("go" "redis-cli" "jq" "curl" "make" "shuf")
 MISSING=()
 
 for TOOL in "${REQUIRED_TOOLS[@]}"; do
-  if ! command -v "$TOOL" >/dev/null 2>&1; then
+  EXPLANATION="${TOOL_EXPLANATIONS[$TOOL]}"
+  if command -v "$TOOL" >/dev/null 2>&1; then
+    echo "[OK] $TOOL: $EXPLANATION"
+  else
+    echo "[MISSING] $TOOL: $EXPLANATION"
     MISSING+=("$TOOL")
   fi
 done
 
 if [ ${#MISSING[@]} -ne 0 ]; then
-  echo "\n[ERROR] The following required tools are missing from your PATH:"
+  echo -e "\n[ERROR] The following required tools are missing from your PATH:"
   for TOOL in "${MISSING[@]}"; do
     echo "  - $TOOL"
   done
-  echo "\nPlease install the missing tools and try again."
+  echo -e "\nPlease install the missing tools and try again."
   exit 1
 else
-  echo "All required tools are installed."
+  echo "\nAll required tools are installed."
 fi
 
 # Optionally, check Go version
