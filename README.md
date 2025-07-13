@@ -12,7 +12,8 @@ This project provides a Go-based CLI and API for generating, storing, indexing, 
 - [Usage](#usage)
   - [CLI Usage](#cli-usage)
   - [API Usage](#api-usage)
-- [System Resource Monitoring & Best Practices](#system-resource-monitoring--best-practices)
+- [System Resource Monitoring](#system-resource-monitoring)
+- [Best Practices](#best-practices)
 - [Performance Testing](#performance-testing)
 - [Performance Results](#performance-results-mac-m3-32gb-ram)
 - [License](#license)
@@ -70,7 +71,7 @@ export REDIS_URL=redis://localhost:6379/0
 
 ## Usage
 
-### CLI Usage
+## CLI Usage
 
 Run the CLI:
 ```sh
@@ -104,13 +105,31 @@ Run the CLI:
   ./bin/redis-document-cli event
   ```
 
-#### Example Records Stored in Valkey/Redis
+## Example Records Stored in Valkey/Redis
+
 - **Customer Record:**
   ```json
   {
     "query_time_ms": 704,
     "result": {
-      ...
+      "confidenceScore": 0.93,
+      "createdAt": "2011-04-05T02:47:52Z",
+      "customerId": "1026be83-1ee2-405f-8ec2-e96ff1a0447f",
+      "deleted": 0,
+      "identifiers": {
+        "session_ids": ["..."],
+        "visitor_id": "visitor_6z2kl"
+      },
+      "job": {
+        "company": "Acme Inc.",
+        "department": "Accounting",
+        "title": "Engineer"
+      },
+      "primaryIdentifiers": {
+        "email": "elroygleichner@denesik.net",
+        "phone": "7885540765"
+      },
+      "updatedAt": "1907-04-25T05:53:38Z"
     }
   }
   ```
@@ -119,14 +138,42 @@ Run the CLI:
   {
     "query_time_ms": 1068,
     "result": {
-      ...
+      "data": {
+        "cookie": "cookie_yTYxZnVY",
+        "email": "FnAjVGtPjV@example.com",
+        "phone": "mGJzxUDIAX"
+      },
+      "event_id": "evt_GxHerj",
+      "event_type": "visitor_event",
+      "identifiers": {
+        "visitor_id": "visitor_6z2kl",
+        "call_id": "call_6z2kl",
+        "chat_id": "chat_6z2kl"
+      },
+      "timestamp": "2022-01-01T12:00:00Z"
     }
   }
   ```
 
+> For more detailed sample records, see [`perf/customer_sample.csv`](perf/customer_sample.csv) and [`perf/event_sample.csv`](perf/event_sample.csv) after running the sample extraction script.
+
+
 ---
 
-### API Usage
+## API Usage
+
+### API Endpoint Summary
+
+| Method | Path                        | Description                              |
+|--------|-----------------------------|------------------------------------------|
+| POST   | /generate_customers         | Generate customers (count param)         |
+| POST   | /generate_events            | Generate events (count param)            |
+| POST   | /create_indexes             | Create RediSearch indexes                |
+| GET    | /search_customers           | Search customers by identifiers          |
+| GET    | /search_events              | Search events by identifiers             |
+| GET    | /random_event               | Get a random event                       |
+| GET    | /random_customer            | Get a random customer                    |
+| GET    | /healthz                    | Health check endpoint                    |
 
 #### Running the API Server
 After building with `make`, run the API server binary:
@@ -162,7 +209,6 @@ See the original README for detailed request/response examples.
 
 ## System Resource Monitoring & Best Practices
 
-### System Resource Monitoring
 To monitor open files, sockets, and resource usage while running the API or CLI (especially during load testing), use:
 ```sh
 ./scripts/monitor_resources.sh
@@ -173,6 +219,13 @@ This script prints:
 - Sockets in TIME_WAIT state
 
 ### Platform-Specific Resource Limit Logging
+
+## Best Practices
+
+### Redis Client Usage (Best Practice)
+The API server uses a singleton Redis client with connection pooling for all HTTP requests.
+**Do not create a new Redis client per request**—this prevents connection leaks and resource exhaustion.
+
 The application logs OS resource limits (open files, processes) at startup using platform-specific code:
 - On Linux: logs both open files and process limits.
 - On macOS: logs open files (process limits are not available).
@@ -182,153 +235,6 @@ The API server uses a singleton Redis client with connection pooling for all HTT
 **Do not create a new Redis client per request**—this prevents connection leaks and resource exhaustion.
 
 ---
-
-### Build both binaries
-```sh
-make
-```
-
-This will generate:
-- `bin/redis-document-cli` — CLI binary
-- `bin/redis-document-api` — API server binary
-
-### Clean binaries
-```sh
-make clean
-```
-
-### Running the CLI
-Set the Valkey/Redis URL with the `REDIS_URL` environment variable (optional, defaults to `redis://localhost:6379/0`):
-
-```sh
-export REDIS_URL=redis://localhost:6379/0
-```
-
-Run the CLI:
-```sh
-./bin/redis-document-cli <command> [args]
-```
-
-## CLI Commands
-
-### Generate Customers
-Generate and store N customers in Valkey/Redis:
-```sh
-./bin/redis-document-cli generate_customers 1000
-```
-
-### Generate Events
-Generate and store N events in Valkey/Redis:
-```sh
-./bin/redis-document-cli generate_events 1000
-```
-
-### Example Records Stored in Valkey/Redis
-
-Below are examples of the JSON structure for both customer and event records as stored in Valkey/Redis. These are helpful for understanding the data model and for generating your own test data.
-
-#### Example: Customer Record
-
-```json
-{
-  "query_time_ms": 704,
-  "result": {
-    "confidenceScore": 0.9336259178648032,
-    "createdAt": "2011-04-05T02:47:52Z",
-    "customerId": "1026be83-1ee2-405f-8ec2-e96ff1a0447f",
-    "deleted": 0,
-    "identifiers": {
-      "session_ids": [
-        "1d586573-48bd-40d6-be99-0f55067e6aac",
-        "c233b9da-5c9a-45fe-89e7-f995db960f59"
-      ],
-      "visitor_ids": [
-        "06ced6eb-58a5-4f29-bba0-b28f5bda3e5b",
-        "12e6ec8e-8435-4e22-827b-b0d366695054"
-      ]
-    },
-    "merged": 1,
-    "personalData": {
-      "company": "Jurispect",
-      "inferred_location": "Colorado Springs, Chad",
-      "name": "Berneice Nikolaus",
-      "title": "Engineer"
-    },
-    "primaryIdentifiers": {
-      "email": "elroygleichner@denesik.net",
-      "phone": "7885540765"
-    },
-    "updatedAt": "1907-04-25T05:53:38Z"
-  }
-}
-```
-
-#### Example: Event Record
-
-```json
-{
-  "query_time_ms": 1068,
-  "result": {
-    "data": {
-      "cookie": "cookie_yTYxZnVY",
-      "email": "FnAjVGtPjV@example.com",
-      "phone": "mGJzxUDIAX"
-    },
-    "event_id": "evt_GxHerj",
-    "event_type": "visitor_event",
-    "identifiers": {
-      "contact_call_id": "call_EkcgN",
-      "contact_chat_id": "chat_idXJv",
-      "contact_external_id": "ext_wHzAe",
-      "contact_lead_id": "f2l_KkarS",
-      "contact_tickets_id": "ticket_fhChr",
-      "visitor_id": "RCu"
-    },
-    "source": "rGnzBVZY",
-    "timestamp": "2025-07-08T18:30:19Z",
-    "visitor_data": {
-      "behavior": {
-        "interactions": [
-          "scroll",
-          "click_cta",
-          "hover"
-        ],
-        "pages_viewed": 2,
-        "time_on_site": 354
-      },
-      "device_info": {
-        "device_type": "mobile",
-        "ip_address": "192.168.133.97",
-        "user_agent": "KsAslrZeXe"
-      },
-      "page_url": "https://sitels9t9.com/pagehe3q0mbdv3",
-      "referrer": "/internal/path",
-      "session_id": "qSo",
-      "utm_params": {
-        "utm_campaign": "campMhsER",
-        "utm_medium": "medPstqW",
-        "utm_source": "srcpFwi"
-      },
-      "visitor_id": "RCu"
-    }
-  }
-}
-```
-
-### Create Indexes
-Create RediSearch indexes for customers and events:
-```sh
-./bin/redis-document-cli create_indexes
-```
-
-### Search Customers
-Search for customers by identifiers (e.g., email, phone, visitor_id):
-```sh
-./bin/redis-document-cli search_customers email=foo@bar.com phone=123456789
-```
-
-### Search Events
-Search for events by identifiers (e.g., visitor_id, call_id, chat_id):
 ```sh
 ./bin/redis-document-cli search_events visitor_id=123 call_id=abc
 ```
@@ -509,13 +415,49 @@ You can easily benchmark API search performance using real data from your Valkey
 ### 1. Extract Sample Data for Testing
 If your database is already populated, use the provided script to extract a 5% random sample of customer and event records (with their indexed fields) into CSV files:
 
+### Generating Sample Data for Performance Testing
+
+To benchmark API search performance with realistic data, you should first extract a random sample of customer and event documents from your Valkey/Redis database into CSV files.
+
+> **Note:** The `sample_to_csv` CLI command relies on the API server being already running and accessible (default: http://localhost:8080). Start the API with:
+> ```sh
+> ./bin/redis-document-api
+> ```
+
+The recommended way to extract samples is using the built-in CLI command:
+
+
+```sh
+bin/redis-document-cli sample_to_csv --percent 5 --output perf/customer_sample.csv --type customer
+```
+Example output:
+```
+Sampled 5000 records out of 100000. Output written to perf/customer_sample.csv
+```
+
+```sh
+bin/redis-document-cli sample_to_csv --percent 5 --output perf/event_sample.csv --type event
+```
+Example output:
+```
+Sampled 5000 records out of 100000. Output written to perf/event_sample.csv
+```
+
+- `--percent 5` controls what fraction of your data is sampled (e.g., 5%).
+- `--output` specifies the CSV file to write.
+- `--type` must be either `customer` or `event`.
+
+This creates `perf/customer_sample.csv` and `perf/event_sample.csv` ready for use with performance testing tools like k6. You can adjust the sample size as needed.
+
+**Alternative:** If you prefer, you can also use the provided shell script:
+
 ```sh
 cd perf
 ./sample_redis_to_csv.sh customer
 ./sample_redis_to_csv.sh event
 ```
 
-This will generate `customer_sample.csv` and `event_sample.csv` in the `perf/` directory, ready for performance testing.
+This will generate `customer_sample.csv` and `event_sample.csv` in the `perf/` directory.
 
 **How the Sample CSVs Are Used for Testing**
 

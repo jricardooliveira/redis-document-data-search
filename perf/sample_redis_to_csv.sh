@@ -5,7 +5,7 @@ REDIS_CLI="redis-cli -u redis://localhost:6379"
 TYPE="$1" # "customer" or "event"
 CSV_FILE="${TYPE}_sample.csv"
 FIELDS_CUSTOMER=("email" "phone" "visitor_id")
-FIELDS_EVENT=("visitor_id" "call_id" "chat_id" "external_id" "form2lead_id" "tickets_id")
+FIELDS_EVENT=("visitor_id" "call_id" "chat_id" "external_id" "lead_id" "tickets_id")
 
 if [[ "$TYPE" != "customer" && "$TYPE" != "event" ]]; then
   echo "Usage: $0 [customer|event]"
@@ -36,7 +36,7 @@ if [ "$TYPE" == "customer" ]; then
   echo "key,email,phone,visitor_id" > "$CSV_FILE"
   FIELDS=("${FIELDS_CUSTOMER[@]}")
 else
-  echo "key,visitor_id,call_id,chat_id,external_id,form2lead_id,tickets_id" > "$CSV_FILE"
+  echo "key,visitor_id,call_id,chat_id,external_id,lead_id,tickets_id" > "$CSV_FILE"
   FIELDS=("${FIELDS_EVENT[@]}")
 fi
 
@@ -64,13 +64,13 @@ for KEY in "${SAMPLED_KEYS[@]}"; do
     VISITOR_ID=$(echo "$RECORD" | jq -r '.primaryIdentifiers.cmec_visitor_id // empty')
     echo "\"$KEY\",\"$EMAIL\",\"$PHONE\",\"$VISITOR_ID\"" >> "$CSV_FILE"
   else
-    VISITOR_ID=$(echo "$RECORD" | jq -r '.identifiers.cmec_visitor_id // empty')
-    CALL_ID=$(echo "$RECORD" | jq -r '.identifiers.cmec_contact_call_id // empty')
-    CHAT_ID=$(echo "$RECORD" | jq -r '.identifiers.cmec_contact_chat_id // empty')
-    EXTERNAL_ID=$(echo "$RECORD" | jq -r '.identifiers.cmec_contact_external_id // empty')
-    FORM2LEAD_ID=$(echo "$RECORD" | jq -r '.identifiers.cmec_contact_form2lead_id // empty')
-    TICKETS_ID=$(echo "$RECORD" | jq -r '.identifiers.cmec_contact_tickets_id // empty')
-    echo "\"$KEY\",\"$VISITOR_ID\",\"$CALL_ID\",\"$CHAT_ID\",\"$EXTERNAL_ID\",\"$FORM2LEAD_ID\",\"$TICKETS_ID\"" >> "$CSV_FILE"
+    VISITOR_ID=$(echo "$RECORD" | jq -r '.identifiers.visitor_id // empty')
+    CALL_ID=$(echo "$RECORD" | jq -r '.identifiers.call_id // empty')
+    CHAT_ID=$(echo "$RECORD" | jq -r '.identifiers.chat_id // empty')
+    EXTERNAL_ID=$(echo "$RECORD" | jq -r '.identifiers.external_id // empty')
+    LEAD_ID=$(echo "$RECORD" | jq -r '.identifiers.lead_id // empty')
+    TICKETS_ID=$(echo "$RECORD" | jq -r '.identifiers.tickets_id // empty')
+    echo "\"$KEY\",\"$VISITOR_ID\",\"$CALL_ID\",\"$CHAT_ID\",\"$EXTERNAL_ID\",\"$LEAD_ID\",\"$TICKETS_ID\"" >> "$CSV_FILE"
   fi
 done
 

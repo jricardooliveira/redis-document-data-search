@@ -126,12 +126,12 @@ var SampleToCSVCommand = &cobra.Command{
 				)
 			} else {
 				row = append(row,
-					getStringField(record, "identifiers", "cmec_visitor_id"),
-					getStringField(record, "identifiers", "cmec_contact_call_id"),
-					getStringField(record, "identifiers", "cmec_contact_chat_id"),
-					getStringField(record, "identifiers", "cmec_contact_external_id"),
-					getStringField(record, "identifiers", "cmec_contact_form2lead_id"),
-					getStringField(record, "identifiers", "cmec_contact_tickets_id"),
+					getStringField(record, "identifiers", "visitor_id"),
+					getStringField(record, "identifiers", "call_id"),
+					getStringField(record, "identifiers", "chat_id"),
+					getStringField(record, "identifiers", "external_id"),
+					getStringField(record, "identifiers", "lead_id"),
+					getStringField(record, "identifiers", "tickets_id"),
 				)
 			}
 			w.Write(row)

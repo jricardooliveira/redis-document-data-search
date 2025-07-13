@@ -73,12 +73,12 @@ func RandomEvent() Event {
 			"phone":  gofakeit.LetterN(10),
 		},
 		Identifiers: map[string]interface{}{
-			"cmec_contact_call_id":      "call_" + gofakeit.LetterN(5),
-			"cmec_contact_chat_id":      "chat_" + gofakeit.LetterN(5),
-			"cmec_contact_external_id":  "ext_" + gofakeit.LetterN(5),
-			"cmec_contact_form2lead_id": "f2l_" + gofakeit.LetterN(5),
-			"cmec_contact_tickets_id":   "ticket_" + gofakeit.LetterN(5),
-			"cmec_visitor_id":           visitorID,
+			"call_id":      "call_" + gofakeit.LetterN(5),
+			"chat_id":      "chat_" + gofakeit.LetterN(5),
+			"external_id":  "ext_" + gofakeit.LetterN(5),
+			"lead_id": "f2l_" + gofakeit.LetterN(5),
+			"tickets_id":   "ticket_" + gofakeit.LetterN(5),
+			"visitor_id":           visitorID,
 		},
 	}
 }

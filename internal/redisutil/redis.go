@@ -75,7 +75,7 @@ func CreateCustomerIndex(client *redis.Client) error {
 		"SCHEMA",
 		"$.primaryIdentifiers.email", "AS", "email", "TEXT",
 		"$.primaryIdentifiers.phone", "AS", "phone", "TEXT",
-		"$.primaryIdentifiers.cmec_visitor_id", "AS", "visitor_id", "TEXT",
+		"$.primaryIdentifiers.visitor_id", "AS", "visitor_id", "TEXT",
 	).Err()
 }
 
@@ -85,12 +85,12 @@ func CreateEventIndex(client *redis.Client) error {
 	// Create index
 	return client.Do(ctx, "FT.CREATE", "eventIdx", "ON", "JSON", "PREFIX", "1", "event:",
 		"SCHEMA",
-		"$.identifiers.cmec_visitor_id", "AS", "visitor_id", "TEXT",
-		"$.identifiers.cmec_contact_call_id", "AS", "call_id", "TEXT",
-		"$.identifiers.cmec_contact_chat_id", "AS", "chat_id", "TEXT",
-		"$.identifiers.cmec_contact_external_id", "AS", "external_id", "TEXT",
-		"$.identifiers.cmec_contact_form2lead_id", "AS", "form2lead_id", "TEXT",
-		"$.identifiers.cmec_contact_tickets_id", "AS", "tickets_id", "TEXT",
+		"$.identifiers.visitor_id", "AS", "visitor_id", "TEXT",
+		"$.identifiers.call_id", "AS", "call_id", "TEXT",
+		"$.identifiers.chat_id", "AS", "chat_id", "TEXT",
+		"$.identifiers.external_id", "AS", "external_id", "TEXT",
+		"$.identifiers.lead_id", "AS", "lead_id", "TEXT",
+		"$.identifiers.tickets_id", "AS", "tickets_id", "TEXT",
 	).Err()
 }
 
